@@ -16,16 +16,20 @@ async def download_file(file_id, timeout=300):
     return tmpdir, path
 
 
-async def delete_tmpdir(tmpdir):
-    try:
-        tmpdir.cleanup()
-    except Exception as e:
-        logging.error(e)
+def delete_tmpdir(*tmpdirs):
+    for tmpdir in tmpdirs:
+        if tmpdir is None:
+            continue
+        
+        try:
+            tmpdir.cleanup()
+        except Exception as e:
+            logging.error(e)
 
 
 async def download_audio(file_id, timeout=300):
     if not file_id:
-        return None
+        return None, None, None
 
     tmpdir, path = await download_file(file_id, timeout)
 
@@ -38,19 +42,15 @@ async def download_audio(file_id, timeout=300):
         logging.error(e)
         duration = 0
 
-    file = open(path, 'rb')
-    await delete_tmpdir(tmpdir)
-    
-    return file, duration
+    file = open(path, 'rb')    
+    return tmpdir, file, duration
 
 
 async def download_image(file_id, timeout=300):
     if not file_id:
-        return None
+        return None, None
 
     tmpdir, path = await download_file(file_id, timeout)
     file = open(path, 'rb')
-    await delete_tmpdir(tmpdir)
-    
-    return file
+    return tmpdir, file
 

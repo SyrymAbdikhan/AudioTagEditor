@@ -1,7 +1,7 @@
 
 from app.helper.message import MESSAGE, edit_message_text, remove_kb, get_info
 from app.helper.keyboards import main_kb, sec1_kb, sec2_kb
-from app.helper.download import download_image, download_audio
+from app.helper.download import delete_tmpdir, download_image, download_audio
 from dispatcher import dp
 
 from aiogram import types
@@ -50,8 +50,9 @@ async def init_state(message: types.Message, state: FSMContext):
 
     img_id = user_data.get('thumb')
     if img_id:
-        img = await download_image(img_id)
+        tmpdir, img = await download_image(img_id)
         main_msg = await message.answer_photo(photo=img, caption=msg, reply_markup=main_kb)
+        delete_tmpdir(tmpdir)
     else:
         main_msg = await message.answer(msg, reply_markup=main_kb)
     
@@ -171,7 +172,7 @@ async def thumb_handler(message: types.Message, state: FSMContext):
         'Gotcha!',
         *get_info(user_data, 'title', 'artist', 'thumb')
     )
-    img = await download_image(user_data.get('thumb'))
+    tmpdir, img = await download_image(user_data.get('thumb'))
 
     main_msg = user_data.get('main_msg')
     await main_msg.delete()
@@ -179,6 +180,7 @@ async def thumb_handler(message: types.Message, state: FSMContext):
     main_msg = await message.answer_photo(photo=img, caption=msg, reply_markup=main_kb)
     await state.update_data(main_msg=main_msg)
 
+    delete_tmpdir(tmpdir)
     await message.delete()
     await MusicInfo.main.set()
 
@@ -257,8 +259,8 @@ async def process_thumb(callback_query: types.CallbackQuery, state: FSMContext):
     await remove_kb(main_msg)
     await callback_query.answer('Processing, please wait')    
 
-    audio, duration = await download_audio(user_data.get('file_id'))
-    thumb = await download_image(user_data.get('thumb'))
+    tmpdir1, audio, duration = await download_audio(user_data.get('file_id'))
+    tmpdir2, thumb = await download_image(user_data.get('thumb'))
 
     await callback_query.message.answer_audio(
         audio=audio,
@@ -267,6 +269,8 @@ async def process_thumb(callback_query: types.CallbackQuery, state: FSMContext):
         thumb=thumb,
         duration=duration
     )
+
+    delete_tmpdir(tmpdir1, tmpdir2)
     await state.finish()
 
 
