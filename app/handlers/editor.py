@@ -222,7 +222,7 @@ async def thumb_delete_callback(callback_query: types.CallbackQuery, state: FSMC
 
 # ===== BACK =====
 @dp.callback_query_handler(lambda c: c.data == 'back', state=[MusicInfo.title, MusicInfo.artist, MusicInfo.thumb])
-async def process_thumb(callback_query: types.CallbackQuery, state: FSMContext):
+async def back_callback(callback_query: types.CallbackQuery, state: FSMContext):
     user_data = await state.get_data()
     msg = MESSAGE['main'].format(
         *get_info(user_data, 'title', 'artist', 'thumb')
@@ -235,7 +235,7 @@ async def process_thumb(callback_query: types.CallbackQuery, state: FSMContext):
 
 # ===== DOWNLOAD =====
 @dp.callback_query_handler(lambda c: c.data == 'download', state=MusicInfo.main)
-async def process_thumb(callback_query: types.CallbackQuery, state: FSMContext):
+async def download_callback(callback_query: types.CallbackQuery, state: FSMContext):
     user_data = await state.get_data()
     main_msg = user_data.get('main_msg')
 
@@ -276,7 +276,7 @@ async def process_thumb(callback_query: types.CallbackQuery, state: FSMContext):
 
 # ===== INCORRECT INPUT HANDLER =====
 @dp.message_handler(content_types=[ContentType.ANY], state=MusicInfo.main)
-async def second_state_check(message: types.Message, state: FSMContext):
+async def incorect_music_input_handler(message: types.Message, state: FSMContext):
     await message.delete()
 
     user_data = await state.get_data()
