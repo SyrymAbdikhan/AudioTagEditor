@@ -1,2 +1,3 @@
+python-dotenv==0.21.0
 aiogram==2.11.2
 mutagen==1.45.1
